@@ -74,6 +74,12 @@ To access the shell inside of a container, run the following command:
 docker exec -it <container_id> bash
 ```
 
+To Restart the Datadog Agent, run the following command:
+
+```bash
+docker exec -it <container_id> supervisorctl restart datadog-agent
+```
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.

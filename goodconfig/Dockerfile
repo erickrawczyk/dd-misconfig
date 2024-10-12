@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 
 # Install deps
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl supervisor
 
 # Install Flask, ddtrace for APM, and Datadog Python client
 RUN pip install flask ddtrace datadog
@@ -31,8 +31,10 @@ RUN bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agen
 COPY datadog.yaml /etc/datadog-agent/datadog.yaml
 COPY goodconfig.d/conf.yaml /etc/datadog-agent/conf.d/goodconfig.d/conf.yaml
 
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # Expose port 80 for the Flask app
 EXPOSE 80
 
 # Start the Datadog agent and the Flask app
-CMD datadog-agent run & python app.py
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

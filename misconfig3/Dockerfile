@@ -31,10 +31,10 @@ RUN bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agen
 COPY datadog.yaml /etc/datadog-agent/datadog.yaml
 COPY misconfig3.d/conf.yaml /etc/datadog-agent/conf.d/misconfig3.d/conf.yaml
 COPY postgres.d/conf.yaml /etc/datadog-agent/conf.d/postgres.d/conf.yaml
-
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose port 80 for the Flask app
 EXPOSE 80
 
 # Start the Datadog agent and the Flask app
-CMD datadog-agent run & python app.py
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
