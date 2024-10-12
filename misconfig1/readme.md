@@ -1,6 +1,6 @@
 # Misconfiguration 1
 
-This example intentionally misconfigures multiline log processing to create a scenario where logs are not ingested correctly.
+This example intentionally misconfigures multiline log processing to create a scenario where logs are not ingested correctly. Initially multi-line logs are not being processed correctly, but even after uncommenting the `log_processing_rules` section, the logs are still not being ingested correctly.
 
 ## Incorrect configuration
 

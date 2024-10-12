@@ -39,6 +39,32 @@ services:
       - DD_API_KEY=${DD_API_KEY}
     networks:
       - datadog_network
+  misconfig3:
+    image: misconfig3
+    container_name: misconfig3
+    build:
+      context: ./misconfig3
+      args:
+        DD_API_KEY: ${DD_API_KEY}
+    ports:
+      - '8083:80'
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+    depends_on:
+      - database
+    networks:
+      - datadog_network
+  database:
+    image: postgres:13
+    container_name: database
+    environment:
+      - POSTGRES_USER=datadog
+      - POSTGRES_PASSWORD=datadog
+      - POSTGRES_DB=mydatabase
+    ports:
+      - '5432:5432'
+    networks:
+      - datadog_network
 
 networks:
   datadog_network:
