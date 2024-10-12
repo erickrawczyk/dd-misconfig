@@ -1,14 +1,25 @@
 version: '3'
 services:
+  goodconfig:
+    build:
+      context: ./goodconfig
+      args:
+        DD_API_KEY: ${DD_API_KEY}
+    ports:
+      - '8081:80'
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+    networks:
+      - datadog_network
   misconfig1:
     build:
       context: ./misconfig1
       args:
         DD_API_KEY: ${DD_API_KEY}
     ports:
-      - '8081:80'
+      - '8082:80'
     environment:
-      - DD_API_KEY=${DD_API_KEY} # Still passed for the agent at runtime
+      - DD_API_KEY=${DD_API_KEY}
     networks:
       - datadog_network
 

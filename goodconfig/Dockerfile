@@ -23,14 +23,14 @@ ARG DD_API_KEY
 # Set environment variables for API key and site
 ENV DD_API_KEY=${DD_API_KEY}
 ENV DD_SITE="us5.datadoghq.com"
-ENV DD_HOSTNAME=misconfig1
+ENV DD_HOSTNAME=goodconfig
 ENV DD_INSTALL_ONLY=true
 
 RUN bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
 
 # Copy Datadog configuration files
 COPY datadog.yaml /etc/datadog-agent/datadog.yaml
-COPY misconfig1.d/conf.yaml /etc/datadog-agent/conf.d/misconfig1.d/conf.yaml
+COPY goodconfig.d/conf.yaml /etc/datadog-agent/conf.d/goodconfig.d/conf.yaml
 
 # Expose port 80 for the Flask app
 EXPOSE 80

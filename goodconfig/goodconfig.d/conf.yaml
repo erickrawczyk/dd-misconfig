@@ -1,7 +1,7 @@
 logs:
   - type: file
     path: /var/log/flask/flask.log
-    service: flask_app1
+    service: goodconfig
     source: flask
     tags:
       - environment:development

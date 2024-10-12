@@ -1,0 +1,13 @@
+logs:
+  - type: file
+    path: /var/log/flask/flask.log
+    service: misconfig1
+    source: flask
+    tags:
+      - environment:development
+    log_processing_rules:
+      - type: multi_line
+        name: pattern_multiline
+        pattern: "\d{4}-\d{2}-\d{2}"
+        improper_key: true
+  
