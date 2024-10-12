@@ -1,0 +1,7 @@
+logs:
+  - type: file
+    path: /var/log/flask/flask.log
+    service: flask_app1
+    source: flask
+    tags:
+      - environment:development

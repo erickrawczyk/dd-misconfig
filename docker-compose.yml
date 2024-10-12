@@ -1,0 +1,17 @@
+version: '3'
+services:
+  misconfig1:
+    build:
+      context: ./misconfig1
+      args:
+        DD_API_KEY: ${DD_API_KEY}
+    ports:
+      - '8081:80'
+    environment:
+      - DD_API_KEY=${DD_API_KEY} # Still passed for the agent at runtime
+    networks:
+      - datadog_network
+
+networks:
+  datadog_network:
+    driver: bridge
