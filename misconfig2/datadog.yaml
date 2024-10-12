@@ -1,3 +1,2 @@
 site: us5.datadoghq.com
-hostname: goodconfig
 logs_enabled: true

@@ -23,7 +23,6 @@ ARG DD_API_KEY
 # Set environment variables for API key and site
 ENV DD_API_KEY=${DD_API_KEY}
 ENV DD_SITE="us5.datadoghq.com"
-ENV DD_HOSTNAME=misconfig1
 ENV DD_INSTALL_ONLY=true
 
 RUN bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"

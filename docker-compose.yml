@@ -5,8 +5,10 @@ services:
       context: ./goodconfig
       args:
         DD_API_KEY: ${DD_API_KEY}
+    image: goodconfig
+    container_name: goodconfig
     ports:
-      - '8081:80'
+      - '8080:80'
     environment:
       - DD_API_KEY=${DD_API_KEY}
     networks:
@@ -16,6 +18,21 @@ services:
       context: ./misconfig1
       args:
         DD_API_KEY: ${DD_API_KEY}
+    image: misconfig1
+    container_name: misconfig1
+    ports:
+      - '8081:80'
+    environment:
+      - DD_API_KEY=${DD_API_KEY}
+    networks:
+      - datadog_network
+  misconfig2:
+    build:
+      context: ./misconfig2
+      args:
+        DD_API_KEY: ${DD_API_KEY}
+    image: misconfig2
+    container_name: misconfig2
     ports:
       - '8082:80'
     environment:

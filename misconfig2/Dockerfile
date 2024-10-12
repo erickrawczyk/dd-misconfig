@@ -29,7 +29,7 @@ RUN bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agen
 
 # Copy Datadog configuration files
 COPY datadog.yaml /etc/datadog-agent/datadog.yaml
-COPY goodconfig.d/conf.yaml /etc/datadog-agent/conf.d/goodconfig.d/conf.yaml
+COPY misconfig2.d/conf.yaml /etc/datadog-agent/conf.d/misconfig2.d/conf.yaml
 
 # Expose port 80 for the Flask app
 EXPOSE 80

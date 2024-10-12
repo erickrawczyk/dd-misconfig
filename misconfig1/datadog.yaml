@@ -1,1 +1,3 @@
+site: us5.datadoghq.com
+hostname: misconfig1
 logs_enabled: true
