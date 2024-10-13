@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y curl
 
 # Install Flask, ddtrace for APM, and Datadog Python client
-RUN pip install flask ddtrace datadog
+RUN pip install flask ddtrace datadog supervisor
 
 # Copy application files
 COPY . .
@@ -25,7 +25,7 @@ ENV DD_API_KEY=${DD_API_KEY}
 ENV DD_SITE="us5.datadoghq.com"
 ENV DD_INSTALL_ONLY=true
 
-RUN bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
+RUN ./install_script_agent7.sh
 
 # Copy Datadog configuration files
 COPY datadog.yaml /etc/datadog-agent/datadog.yaml
@@ -36,4 +36,4 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 EXPOSE 80
 
 # Start the Datadog agent and the Flask app
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
