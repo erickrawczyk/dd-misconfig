@@ -21,8 +21,13 @@ app = Flask(__name__)
 
 initialize()
 
+# Create a logs directory if it doesn't exist
+if not os.path.exists("/var/log/flask"):
+    os.makedirs("/var/log/flask")
+
 # Configure logging to a file with a custom format
 logging.basicConfig(
+    filename="/var/log/flask/flask.log",
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
