@@ -103,12 +103,12 @@ resource "aws_instance" "app_server" {
               yum update -y
 
               # Install required tools
-              yum install -y git python3 postgresql postgresql-server postgresql-devel
+              yum install -y git python3 postgresql15 postgresql15-server postgresql15-devel
 
               # Initialize and start the PostgreSQL database
-              postgresql-setup initdb
-              systemctl enable postgresql
-              systemctl start postgresql
+              /usr/bin/postgresql-15-setup initdb
+              systemctl enable postgresql-15
+              systemctl start postgresql-15
 
               # Change to the postgres user to configure the database
               sudo -u postgres psql -c "CREATE DATABASE mydatabase;"
@@ -126,7 +126,7 @@ resource "aws_instance" "app_server" {
               git clone https://github.com/erickrawczyk/dd-misconfig.git app
 
               # Navigate to the app directory
-              cd app
+              cd app/misconfigbase
 
               # Checkout branch
               git checkout WIP
@@ -135,7 +135,7 @@ resource "aws_instance" "app_server" {
               pip3 install -r requirements.txt
 
               # Download the Datadog Agent installation script
-              DD_API_KEY=${DD_API_KEY} DD_INSTALL_ONLY=true bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
+              DD_API_KEY=${var.dd_api_key} DD_INSTALL_ONLY=true bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
 
               # Enable and start the Datadog Agent
               systemctl enable datadog-agent
