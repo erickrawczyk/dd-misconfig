@@ -128,6 +128,9 @@ resource "aws_instance" "app_server" {
               # Navigate to the app directory
               cd app
 
+              # Checkout branch
+              git checkout WIP
+
               # Install Python requirements
               pip3 install -r requirements.txt
 
