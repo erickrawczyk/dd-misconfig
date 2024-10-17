@@ -1,0 +1,6 @@
+site: us5.datadoghq.com
+hostname: misconfig5
+logs_enabled: true
+apm_config:
+  enabled: true
+  receiver_port: 8126

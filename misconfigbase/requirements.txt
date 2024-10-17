@@ -1,0 +1,4 @@
+flask
+ddtrace
+datadog
+psycopg2

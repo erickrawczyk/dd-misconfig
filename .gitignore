@@ -6,3 +6,4 @@
 *.pem
 *.tfplan*
 .terraform.lock.hcl
+*.tfvars

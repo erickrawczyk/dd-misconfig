@@ -1,9 +1,9 @@
-output "instance_public_ip" {
-  description = "Public IP of the EC2 instance"
-  value       = aws_instance.app_server.public_ip
+output "instance_public_ips" {
+  description = "Public IPs of all EC2 instances"
+  value       = [for instance in aws_instance.app_server : instance.public_ip]
 }
 
-output "ssh_command" {
-  description = "SSH command to connect to the EC2 instance"
-  value       = "ssh -i private_key.pem ec2-user@${aws_instance.app_server.public_ip}"
+output "ssh_commands" {
+  description = "SSH commands to connect to each EC2 instance"
+  value       = [for instance in aws_instance.app_server : "ssh -i private_key.pem ec2-user@${instance.public_ip}"]
 }

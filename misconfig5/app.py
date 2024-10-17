@@ -5,22 +5,24 @@ import time
 from datetime import datetime
 
 import psycopg2
+from datadog import initialize, statsd
+from ddtrace import patch_all, tracer
 from flask import Flask, jsonify
 
+DB_HOST = "database"
 DB_PORT = 5432
 DB_NAME = "mydatabase"
 DB_USER = "datadog"
 DB_PASSWORD = "datadog"
 
+patch_all()
+
 app = Flask(__name__)
 
-# Create a logs directory if it doesn't exist
-if not os.path.exists("/var/log/flask"):
-    os.makedirs("/var/log/flask")
+initialize(statsd_host="dd-agent", statsd_port=8125)
 
 # Configure logging to a file with a custom format
 logging.basicConfig(
-    filename="/var/log/flask/flask.log",
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -77,20 +79,24 @@ def get_logs():
 def log_periodically():
     while True:
         app.logger.info(f"Logging a message every second: {datetime.now()}")
+        statsd.increment("misconfig5.autolog_count", tags=["environment:development"])
         time.sleep(1)
 
 
 def insert_periodically():
     while True:
         create_log(f"Record inserted at {datetime.now()}")
-        time.sleep(10)
+        time.sleep(60)
 
 
 @app.route("/")
 def logs():
-    rows = get_logs()
-    logs_list = [{"id": row[0], "message": row[1], "created_at": row[2].isoformat()} for row in rows]
-    return jsonify(logs_list)
+    with tracer.trace("get_logs") as span:
+        rows = get_logs()
+        logs_list = [{"id": row[0], "message": row[1], "created_at": row[2].isoformat()} for row in rows]
+        statsd.increment("misconfig5.requests", tags=["environment:development"])
+        span.set_tag("logs", logs_list)
+        return jsonify(logs_list)
 
 
 @app.route("/error")

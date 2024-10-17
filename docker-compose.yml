@@ -15,6 +15,7 @@ services:
       - /proc/:/host/proc/:ro
       - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./datadog.yaml:/etc/datadog-agent/datadog.yaml
     networks:
       - datadog_network
   # goodconfig:
@@ -78,21 +79,24 @@ services:
       - POSTGRES_USER=datadog
       - POSTGRES_PASSWORD=datadog
       - POSTGRES_DB=mydatabase
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
     ports:
       - '5432:5432'
     networks:
       - datadog_network
-  misconfig4:
-    image: misconfig4
-    container_name: misconfig4
+  misconfig5:
+    image: misconfig5
+    container_name: misconfig5
     build:
-      context: ./misconfig4
+      context: ./misconfig5
       args:
         DD_API_KEY: ${DD_API_KEY}
         DD_GIT_COMMIT_SHA: $(git rev-parse HEAD)
         DD_GIT_REPOSITORY_URL: $(git config --get remote.origin.url)
     ports:
-      - '8084:80'
+      - '8085:80'
+      - '8126:8126'
+      - '8125:8125/udp'
     environment:
       - DD_API_KEY=${DD_API_KEY}
       - DD_AGENT_HOST=dd-agent
@@ -106,11 +110,11 @@ services:
         [
           {
             "source": "python", 
-            "service": "misconfig4",
+            "service": "misconfig5",
             "log_processing_rules": {
-              "type": "multi_line"
-              "name": "pattern_multiline"
-              "pattern": "\\d{4}-\\d{2}-\\d{2}"
+              "type": "multi_line",
+              "name": "pattern_multiline",
+              "pattern": "\\d{4}-\\d{2}-\\d{2}",
               "include_at_match": true
             }
           }

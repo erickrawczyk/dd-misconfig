@@ -76,9 +76,16 @@ resource "aws_route_table_association" "a" {
   route_table_id = aws_route_table.rt.id
 }
 
+variable "dd_api_key" {
+  description = "Datadog API Key"
+  type        = string
+  sensitive   = true
+}
+
 # EC2 Instance
 resource "aws_instance" "app_server" {
-  ami           = "ami-0c94855ba95c71c99" # Amazon Linux 2 AMI in us-east-1
+  count         = 10
+  ami           = "ami-06b21ccaeff8cd686" # Amazon Linux 2 AMI in us-east-1
   instance_type = "t2.medium"
   key_name      = aws_key_pair.deployer.key_name
 
@@ -89,30 +96,54 @@ resource "aws_instance" "app_server" {
 
   user_data = <<-EOF
               #!/bin/bash
-              # Install Docker
-              amazon-linux-extras install docker -y
-              service docker start
-              usermod -a -G docker ec2-user
+              # Set environment variable for Datadog API Key
+              export DD_API_KEY=${var.dd_api_key}
 
-              sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-              docker-compose version
+              # Update the system
+              yum update -y
 
-              # Install git
-              yum install git -y
+              # Install required tools
+              yum install -y git python3 postgresql postgresql-server postgresql-devel
+
+              # Initialize and start the PostgreSQL database
+              postgresql-setup initdb
+              systemctl enable postgresql
+              systemctl start postgresql
+
+              # Change to the postgres user to configure the database
+              sudo -u postgres psql -c "CREATE DATABASE mydatabase;"
+              sudo -u postgres psql -c "CREATE USER datadog WITH PASSWORD 'datadog';"
+              sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE mydatabase TO datadog;"
+
+              # Install pip and Python requirements
+              python3 -m ensurepip
+              pip3 install --upgrade pip
+
+              # Navigate to the home directory of ec2-user
+              cd /home/ec2-user
 
               # Clone the GitHub repository
-              su ec2-user -c "git clone https://github.com/erickrawczyk/dd-misconfig.git /home/ec2-user/app"
+              git clone https://github.com/erickrawczyk/dd-misconfig.git app
 
-              # Change directory to the app
-              cd /home/ec2-user/app
+              # Navigate to the app directory
+              cd app
 
-              # Build and run Docker containers
-              su ec2-user -c "cd /home/ec2-user/app && docker-compose up -d --build"
+              # Install Python requirements
+              pip3 install -r requirements.txt
+
+              # Download the Datadog Agent installation script
+              DD_API_KEY=${DD_API_KEY} DD_INSTALL_ONLY=true bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
+
+              # Enable and start the Datadog Agent
+              systemctl enable datadog-agent
+              systemctl start datadog-agent
+
+              # Start the Python application with ddtrace
+              ddtrace-run python3 app.py # Adjust the command according to the app's structure
               EOF
 
   tags = {
-    Name = "DataDogMisconfigDemo"
+    Name = "DataDogMisconfigDemo-${count.index}"
   }
 }
 
