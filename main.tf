@@ -85,7 +85,7 @@ variable "dd_api_key" {
 # EC2 Instance
 resource "aws_instance" "app_server" {
   count         = 10
-  ami           = "ami-06b21ccaeff8cd686" # Amazon Linux 2 AMI in us-east-1
+  ami           = "ami-0866a3c8686eaeeba"
   instance_type = "t2.medium"
   key_name      = aws_key_pair.deployer.key_name
 
@@ -96,53 +96,72 @@ resource "aws_instance" "app_server" {
 
   user_data = <<-EOF
               #!/bin/bash
-              # Set environment variable for Datadog API Key
-              export DD_API_KEY=${var.dd_api_key}
+              # Set environment variables
+              export DD_API_KEY="${var.dd_api_key}"
 
               # Update the system
-              yum update -y
+              sudo apt update -y
+              sudo apt upgrade -y
 
               # Install required tools
-              yum install -y git python3 postgresql15 postgresql15-server postgresql15-devel
+              sudo apt install -y git python3 python3-pip postgresql postgresql-contrib
+
+              # Start PostgreSQL service
+              sudo systemctl enable postgresql
+              sudo systemctl start postgresql
 
               # Initialize and start the PostgreSQL database
-              /usr/bin/postgresql-15-setup initdb
-              systemctl enable postgresql-15
-              systemctl start postgresql-15
-
-              # Change to the postgres user to configure the database
               sudo -u postgres psql -c "CREATE DATABASE mydatabase;"
               sudo -u postgres psql -c "CREATE USER datadog WITH PASSWORD 'datadog';"
               sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE mydatabase TO datadog;"
 
               # Install pip and Python requirements
-              python3 -m ensurepip
-              pip3 install --upgrade pip
+              sudo -H pip3 install --upgrade pip
 
-              # Navigate to the home directory of ec2-user
-              cd /home/ec2-user
+              # Navigate to the home directory of the default user
+              cd /home/ubuntu
 
               # Clone the GitHub repository
               git clone https://github.com/erickrawczyk/dd-misconfig.git app
 
               # Navigate to the app directory
               cd app/misconfigbase
-
-              # Checkout branch
               git checkout WIP
 
               # Install Python requirements
               pip3 install -r requirements.txt
 
               # Download the Datadog Agent installation script
-              DD_API_KEY=${var.dd_api_key} DD_INSTALL_ONLY=true bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
+              DD_API_KEY="${var.dd_api_key}" DD_INSTALL_ONLY=true bash -c "$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)"
 
               # Enable and start the Datadog Agent
-              systemctl enable datadog-agent
-              systemctl start datadog-agent
+              sudo systemctl enable datadog-agent
+              sudo systemctl start datadog-agent
 
-              # Start the Python application with ddtrace
-              ddtrace-run python3 app.py # Adjust the command according to the app's structure
+              # Create a systemd service for the app
+              echo "[Unit]
+              Description=Misconfigbase Application Service
+              After=network.target postgresql.service
+
+              [Service]
+              User=ubuntu
+              WorkingDirectory=/home/ubuntu/app/misconfigbase
+              ExecStart=/usr/bin/ddtrace-run /usr/bin/python3 app.py
+              Restart=always
+              Environment=\"DD_API_KEY=${var.dd_api_key}\"
+
+              [Install]
+              WantedBy=multi-user.target
+              " | sudo tee /etc/systemd/system/app.service
+
+              # Reload systemd to pick up the new service
+              sudo systemctl daemon-reload
+
+              # Enable the service to start on boot
+              sudo systemctl enable app.service
+
+              # Start the application service
+              sudo systemctl start app.service
               EOF
 
   tags = {

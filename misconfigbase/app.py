@@ -19,7 +19,7 @@ patch_all()
 
 app = Flask(__name__)
 
-initialize(statsd_host="dd-agent", statsd_port=8125)
+initialize()
 
 # Configure logging to a file with a custom format
 logging.basicConfig(
